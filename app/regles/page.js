@@ -34,7 +34,7 @@ import { useRouter } from 'next/router';
 
 import React from 'react';
 
-const Regles = () => {
+const Page = () => {
     return (
         <div>
             <h1>Les règles du vote</h1>
@@ -48,5 +48,5 @@ const Regles = () => {
     );
 };
 
-export default Regles;
+export default Page;
 

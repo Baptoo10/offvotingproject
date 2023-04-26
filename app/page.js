@@ -1,6 +1,6 @@
 "use client"; // client component
 
-import {regles} from './regles'
+import {regles} from './regles/page'
 import Test from './test'
 import Image from 'next/image';
 import styles from './page.module.css';
@@ -24,7 +24,7 @@ export default function Home() {
             <div>
                 <Row justify="center">
                     <Col css={{ marginTop: '$8' }}>
-                        <Link href='./regles'>
+                        <Link href='/regles'>
 
                                 <Button
                                     size="sm"
