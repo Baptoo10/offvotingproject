@@ -10,9 +10,14 @@ module.exports = {
     hardhat: {
       chainId:1337
     }
+  },
+  solcLoader: {
+    version: "0.8.9",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
   }
 };
-
-
-
-
