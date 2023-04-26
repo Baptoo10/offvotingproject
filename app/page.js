@@ -39,7 +39,7 @@ export default function Home() {
                                       fontSize: '20px',
                                   }}
                               >
-                                  Règles
+                                  Règles du vote
                               </span>
                                 </Button>
 
