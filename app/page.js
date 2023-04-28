@@ -15,86 +15,75 @@ import { NextUIProvider } from '@nextui-org/react';
 const WebSocket = require('ws');
 
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-import Voting from './artifacts/contracts/votingcontract.sol/Voting.json' //ABI
-const votingAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3' //ADDRESS
+import VotingABI from './artifacts/contracts/votingcontract.sol/Voting.json' //ABI
+const VotingAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512' //ADDRESS
 
 export default function Home() {
 
-    const [newProposal, setNewProposal] = useState(""); // State pour stocker la nouvelle proposition
+    const [newProposalName, setNewProposalName] = useState(''); // State pour stocker le nouveau nom de proposition
+    const [newProposalDesc, setNewProposalDesc] = useState(''); // State pour stocker le nouveau nom de proposition
     const [proposals, setProposals] = useState([]); // State pour stocker les propositions récupérées
+    const [props, setProps] = useState([]);
+    const [propsDesc, setPropsDesc] = useState([]);
+    const [creatorProps, setCreatorProps] = useState([]);
+    const [numVotes, setNumVotes] = useState([]);
+    const [whoVoted, setWhoVoted] = useState([]);
 
-    let state = {
-        voters:[],
-        proposals:[],
-    };
 
-    useEffect(()=>{
-        console.log("Fetching proposals...");
-        getProposal();
-    }, [])
-
-    async function requestAccount(){
-        await window.ethereum.request({method: 'eth_requestAccounts'})
-    }
-
-    async function getProposal(){
-        console.log("Getting proposals...");
-       // await requestAccount();
-        if (typeof window.ethereum !== 'undefined') {
-
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const Constvotingcontract = new ethers.Contract(votingAddress, Voting.abi, provider);
-
-            try {
-                const data = await Constvotingcontract.getProposals();
-                console.log("Proposals fetched:", data);
-
-                setProposals(data);
-            } catch (error) {
-                console.error("Probleme lors de l'affichage des votant : ", error);
-            }
-        }
+    async function requestAccount() {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
     }
 
 
     async function addProposal() {
         await requestAccount();
-        console.log(newProposal);
-        if(!newProposal) return
+        console.log(newProposalName);
+        if(!newProposalName) return
         if (typeof window.ethereum !== 'undefined') {
             try {
-                console.log(newProposal);
+                console.log(newProposalName);
                 // Se connecter au fournisseur Web3 (MetaMask)
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 //Signer le contrat
                 const signer = provider.getSigner();
                 // Créer une instance du contrat Voting
-                const votingContract = new ethers.Contract(votingAddress, Voting.abi, signer);
+                const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
                 // Appeler la fonction Solidity pour ajouter une nouvelle proposition
-                const transaction = await votingContract.addProposal(newProposal);
+                const transaction = await contract.addProposal(newProposalName, newProposalDesc);
 
                 //this.state.proposals.push(newProposal);
                 console.log("coucou");
                 // Réinitialiser le champ pour la nouvelle proposition
-                setNewProposal("");
+                setNewProposalName("");
+                setNewProposalDesc("");
                 //await transaction.wait();
-                getProposal()
             } catch (error) {
                 console.error("Erreur lors de l'ajout de la proposition : ", error);
             }
         } else {
             console.error("Web3 non disponible. Veuillez installer MetaMask pour interagir avec cette fonction.");
         }
+
     }
 
+    useEffect(() => {
+        console.log('Fetching proposals...');
+        async function fetchData() {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
+            const [props, propsDesc, creatorProps, numVotes, votedBy] = await contract.getFullProps();
 
-    function handleNewProposal(event) {
-        setNewProposal(event.target.value);
-        // event.target.value contient la valeur du champ de saisie de la nouvelle proposition
-        setProposals([...proposals, event.target.value]);
-    }
+            setProps(props);
+            setPropsDesc(propsDesc);
+            setCreatorProps(creatorProps);
+            setNumVotes(numVotes);
+            setWhoVoted(votedBy);
+           // getProposal();
+        }
 
-
+        fetchData();
+    }, []);
 
     return (
         <main className={styles.main}>
@@ -137,8 +126,15 @@ export default function Home() {
             <div>
                 <Row justify="center">
                     <Col css={{ marginTop: '$4' }}>
-                        <input type="text" id="newProposalInput" value={newProposal} onChange={(e) => setNewProposal(e.target.value)} />
-                        <Button onPress={addProposal}>Ajouter une proposition ici</Button>
+                        <ul>
+                            <input type="text" id="newProposalInputName" value={newProposalName} onChange={(e) => setNewProposalName(e.target.value)} />
+                        </ul>
+                        <ul>
+                            <input type="text" id="newProposalInputDesc" value={newProposalDesc} onChange={(e) => setNewProposalDesc(e.target.value)} />
+                        </ul>
+                        <ul>
+                            <Button onPress={addProposal}>Ajouter une proposition ici</Button>
+                        </ul>
                     </Col>
                 </Row>
             </div>
@@ -147,10 +143,15 @@ export default function Home() {
             <div>
                 <Row justify="center">
                     <Col css={{ marginTop: '$4' }}>
-                        <h2>Liste des propositions</h2>
+                        <u><h1>Liste des propositions</h1></u>
                         <ul>
-                            {proposals.map((proposal, index) => (
-                                <li key={index}>{proposal}</li>
+                            {props.map((prop, index) => (
+                                <li key={index}>
+                                    <h2><strong>{prop}</strong></h2>
+                                    <p>{propsDesc[index]}</p>
+                                    <p>Proposition faite par : {creatorProps[index]}</p>
+                                    <br></br>
+                                </li>
                             ))}
                         </ul>
                     </Col>

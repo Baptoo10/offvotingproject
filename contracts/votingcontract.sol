@@ -209,13 +209,13 @@ contract Voting {
 
     //function pour finir le vote
     function endVoteFunction() public {
-        require(msg.sender==0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, "vous n'avez pas les privileges pour arreter le vote"); //account 2 on hardhat
+        require(msg.sender==0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, "vous n'avez pas les privileges pour arreter le vote"); //account 2 on hardhat
         endVote=true;
     }
 
     //function pour finir le vote
     function newVoteFunction() public {
-        require(msg.sender==0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, "vous n'avez pas les privileges pour refaire un vote"); //account 2 on hardhat
+        require(msg.sender==0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, "vous n'avez pas les privileges pour refaire un vote"); //account 2 on hardhat
         endVote=false;
 
         for (uint256 i = 0; i < proposals.length; i++) {
@@ -244,9 +244,7 @@ contract Voting {
 }
 
 
-/*// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
-
+/*
 contract Voting {
 
     mapping(address => bool) public hasVoted; // Mapping pour stocker si une adresse a déjà voté
