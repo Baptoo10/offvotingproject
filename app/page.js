@@ -17,6 +17,7 @@ import {router} from "next/client"; //ABI
 
 const WebSocket = require('ws');
 
+
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 import VotingABI from './artifacts/contracts/votingcontract.sol/Voting.json'
 const VotingAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512' //ADDRESS
@@ -157,19 +158,23 @@ export default function Home() {
             <div style={{ display: 'grid', justifyContent: 'center' }} >
             <Row justify="center" css={{ marginTop: '$4' }}>
                     <Col>
-                        <div style={{ color: 'black', backgroundColor: 'white', padding: '16px', borderRadius: '4px', width: '50vw' }}>
-                            <u><h1>Liste des propositions</h1></u>
-                            <ul>
-                                {props.map((prop, index) => (
-                                    <li key={index} onClick={() => handleClick(index, router)}>
-                                        <Link href="/proplink"><h2 style={{ color: 'black' }}><strong>{prop}</strong></h2></Link>
-                                        <p>{propsDesc[index]}</p>
-                                        <p>Proposition faite par : {creatorProps[index]}</p>
-                                        <br></br>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                        <ClientWrapper>
+                            {({ router }) => (
+                                <div style={{ color: 'black', backgroundColor: 'white', padding: '16px', borderRadius: '4px', width: '50vw' }}>
+                                    <u><h1>Liste des propositions</h1></u>
+                                    <ul>
+                                        {props.map((prop, index) => (
+                                            <li key={index} onClick={() => handleClick(index, router)}>
+                                                <Link href="/proplink"><h2 style={{ color: 'black' }}><strong>{prop}</strong></h2></Link>
+                                                <p>{propsDesc[index]}</p>
+                                                <p>Proposition faite par : {creatorProps[index]}</p>
+                                                <br></br>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </ClientWrapper>
                     </Col>
                 </Row>
             </div>

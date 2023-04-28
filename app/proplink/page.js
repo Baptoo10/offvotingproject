@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/router'
 
 export default function  Proplink () {
-    const router = useRouter;
+    const router = useRouter();
     const { id } = router.query;
    // const { id } = router.query ? router.query : {};
 
