@@ -29,6 +29,7 @@ contract Voting {
 
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////
 
     // Fonction pour ajouter une proposition au tableau de propositions
     function addProposal(string memory proposal, string memory desc) public {
@@ -44,6 +45,8 @@ contract Voting {
 
         proptabl.push(padd);
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
 
     function removeProposal(string memory proposal) public returns (bool) {
         require(endVote==false, "Le vote est termine");
@@ -61,6 +64,21 @@ contract Voting {
         // Si la proposition n'est pas trouvee, retourner false
         return false;
     }
+
+    function removeProposalById(uint256 indexProp) public returns (bool) {
+        require(endVote == false, "Le vote est termine");
+
+        if (proptabl[indexProp].isActive) {
+            proptabl[indexProp].isActive = false;
+            return true;
+        }
+
+        // Si la proposition n'est pas trouvée, retourner false
+        return false;
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
 
     //function to have the full proposal (prop, desc, creator prop)
     function getFullProps() public view returns (string[] memory, string[] memory, address[] memory, uint256[] memory, address[][] memory) {
@@ -93,8 +111,28 @@ contract Voting {
     }
 
 
+    //function to get the full proposal (prop, desc, creator prop)
+    function getFullPropById(uint256 indexProp) public view returns (string[] memory, string[] memory, address[] memory, uint256[] memory, address[][] memory) {
+
+        string[] memory props = new string[](1);
+        string[] memory propsdesc = new string[](1);
+        address[] memory creatorprops = new address[](1);
+        uint256[] memory numVotes = new uint256[](1);
+        address[][] memory votedBy = new address[][](1);
+
+        if (proptabl[indexProp].isActive) {
+            props[0] = proptabl[indexProp].props;
+            propsdesc[0] = proptabl[indexProp].propsdesc;
+            creatorprops[0] = proptabl[indexProp].creatorprops;
+            numVotes[0] = proptabl[indexProp].NumberVotes;
+            votedBy[0] = proptabl[indexProp].whoVoted;
+        }
+
+        return (props, propsdesc, creatorprops, numVotes, votedBy);
+    }
 
 
+    //////////////////////////////////////////////////////////////////////////////////////////
 
     // Fonction pour voter pour une proposition
     function vote(string memory proposal) public {
@@ -116,6 +154,27 @@ contract Voting {
         }
     }
 
+    // Fonction pour voter pour une proposition
+    function voteById(uint256 indexProp) public {
+
+        require(endVote==false, "Le vote est termine");
+        require(!hasVoted[msg.sender], "You have already voted"); // Verifie que l'adresse du votant n'a pas encore participee au vote
+        require(indexProp < proptabl.length, "Invalid proposal ID"); // Vérifie que l'ID de proposition est valide
+
+        // Accéder à la proposition à l'indice propId
+        prop storage proposition = proptabl[indexProp];
+
+        require(proposition.isActive == true, "Proposal not existing");
+
+        hasVoted[msg.sender] = true;
+        proposition.whoVoted.push(msg.sender);
+        proposition.NumberVotes += 1;
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+
     // Fonction pour obtenir le nombre de votes pour une proposition donnee
     function getVoteCount(string memory proposal) public view returns (uint256) {
 
@@ -132,6 +191,41 @@ contract Voting {
 
         return 0; // Retourne 0 sinon
     }
+
+    // Fonction pour obtenir le nombre de votes pour une proposition donnee
+    function getVoteCountById(uint256 indexProp) public view returns (uint256) {
+
+        require(indexProp < proptabl.length, "Invalid proposal"); // Verifie que l'identifiant de proposition existe
+
+        prop storage proposition = proptabl[indexProp];
+        require(proposition.isActive == true, "Proposal not existing");
+
+        return proposition.NumberVotes; // Retourne le nombre de votes pour la proposition avec l'identifiant "proposalId"
+
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+
+    // Fonction pour verifier si une proposition existe deja
+    function isProposalExists(string memory proposal) internal view returns (bool) {
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (keccak256(bytes(proptabl[i].props)) == keccak256(bytes(proposal)) && proptabl[i].isActive) {
+                return true;
+            }
+        }
+        return false; // Retourne false si la proposition n'existe pas
+    }
+
+    // Fonction pour verifier si une proposition existe deja
+    function isProposalExistsById(uint256 indexProp) internal view returns (bool) {
+        if (indexProp <= proptabl.length && proptabl[indexProp].isActive) {
+            return true;
+        }
+        return false; // Retourne false si la proposition n'existe pas
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
 
 
     //Fonction pour afficher tous les votants (adresses)
@@ -192,21 +286,6 @@ contract Voting {
         return winningProposal;
     }
 
-
-
-
-    // Fonction pour verifier si une proposition existe deja
-    function isProposalExists(string memory proposal) internal view returns (bool) {
-        for (uint256 i = 0; i < proptabl.length; i++) {
-            if (keccak256(bytes(proptabl[i].props)) == keccak256(bytes(proposal)) && proptabl[i].isActive) {
-                return true;
-            }
-        }
-        return false; // Retourne false si la proposition n'existe pas
-    }
-
-
-
     //function pour finir le vote
     function endVoteFunction() public {
         require(msg.sender==0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, "vous n'avez pas les privileges pour arreter le vote"); //account 2 on hardhat
@@ -238,94 +317,5 @@ contract Voting {
 
     }
 
-
-
-
 }
 
-
-/*
-contract Voting {
-
-    mapping(address => bool) public hasVoted; // Mapping pour stocker si une adresse a déjà voté
-    mapping(string => uint256) public voteCount; // Mapping pour stocker le nombre de votes par proposition
-    string[] public proposals; // Tableau pour stocker les propositions
-    address[] public voters; // Tableau pour stocker les adresses des votants
-
-    constructor() {
-
-    }
-
-
-    // Fonction pour voter pour une proposition
-    function vote(string memory proposal) public {
-
-        require(!hasVoted[msg.sender], "You have already voted"); // Verifie que l'adresse du votant n'a pas encore participee au vote
-        require(isProposalExists(proposal), "Invalid proposal"); // Verifie que la proposition existe
-
-        voteCount[proposal]++; // Incremente le nombre de votes pour la proposition donnée
-        hasVoted[msg.sender] = true; // Marque l'adresse de l'électeur comme ayant voté
-        voters.push(msg.sender);
-
-    }
-
-
-    // Fonction pour ajouter une proposition au tableau de propositions
-    function addProposal(string memory proposal) public {
-
-        require(bytes(proposal).length > 0, "Proposal name cannot be empty"); // Verifie que le nom de la proposition n'est pas vide
-        require(!isProposalExists(proposal), "Proposal already exists"); // Verifie que la proposition n'existe pas deja
-        proposals.push(proposal); // Ajoute la proposition au tableau de propositions
-
-        getProposals(); //appel a getProposals() pour maj l'interface visible par l'user de la liste
-
-    }
-
-
-
-
-    // Fonction pour obtenir le nombre de votes pour une proposition donnee
-    function getVoteCount(string memory proposal) public view returns (uint256) {
-        require(isProposalExists(proposal), "Invalid proposal"); // Verifie que la proposition existe
-        return voteCount[proposal]; // Retourne le nombre de votes pour la proposition donnee
-    }
-
-
-    //Fonction pour afficher toutes les propositions
-    function getProposals() public view returns (string[] memory) {
-        return proposals;
-    }
-
-    //Fonction pour afficher tous les votants (adresses)
-    function getVoters() public view returns (address[] memory) {
-        return voters;
-    }
-
-
-    // Fonction pour afficher les resultats des votes
-    function getResultats() public view returns (string[] memory, uint256[] memory) {
-
-        uint256[] memory voteCounts = new uint256[](proposals.length); // Tableau pour stocker le nombre de votes pour chaque proposition
-
-        for (uint256 i = 0; i < proposals.length; i++) {
-
-            voteCounts[i] = voteCount[proposals[i]]; // Obtient le nombre de votes pour chaque proposition
-
-        }
-
-        return (proposals, voteCounts); // Retourne les noms de propositions et les nombres de votes correspondants
-    }
-
-
-
-    // Fonction pour verifier si une proposition existe deja
-    function isProposalExists(string memory proposal) internal view returns (bool) {
-        for (uint256 i = 0; i < proposals.length; i++) {
-            if (keccak256(bytes(proposals[i])) == keccak256(bytes(proposal))) {
-                // Compare le hachage des noms de proposition pour savoir si elles sont identiques
-                return true; // Retourne true si la proposition existe deja
-            }
-        }
-        return false; // Retourne false si la proposition n'existe pas
-    }
-}*/

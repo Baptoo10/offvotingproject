@@ -2,7 +2,7 @@
 
 //import list
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation'; //'next/navigation' et non 'next/router' puisque je navigue avec le app directory
 import {regles} from './regles/page'
 import Image from 'next/image';
 import './globals.css';
@@ -13,19 +13,17 @@ import Link from "next/link";
 import {ethers} from "ethers";
 import { NextUIProvider } from '@nextui-org/react';
 import { ThemeProvider } from 'next-themes';
-import {router} from "next/client"; //ABI
+//import {router} from "next/client"; //ABI
 
 const WebSocket = require('ws');
 
 
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 import VotingABI from './artifacts/contracts/votingcontract.sol/Voting.json'
-const VotingAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512' //ADDRESS
+const VotingAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3' //ADDRESS
 
 export default function Home() {
-    const theme = {
-        backgroundColor: '#FFFF8F'
-    }
+
     const [newProposalName, setNewProposalName] = useState('') ; // State pour stocker le nouveau nom de proposition
     const [newProposalDesc, setNewProposalDesc] = useState(''); // State pour stocker le nouveau nom de proposition
     const [proposals, setProposals] = useState([]); // State pour stocker les propositions récupérées
@@ -35,22 +33,13 @@ export default function Home() {
     const [numVotes, setNumVotes] = useState([]);
     const [whoVoted, setWhoVoted] = useState([]);
 
+    const router = useRouter();
 
-    async function requestAccount() {
+   async function requestAccount() {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
-    }
+   }
 
-    function ClientWrapper({ children }) {
-        const router = useRouter();
-        return children({ router });
-    }
-
-    function handleClick(index, router) {
-        const proposalUrl = `/proplink/${index}`;
-        router.push(proposalUrl);
-    }
-
-    async function addProposal() {
+   async function addProposal() {
         await requestAccount();
         console.log(newProposalName);
         if(!newProposalName) return
@@ -71,7 +60,7 @@ export default function Home() {
                 // Réinitialiser le champ pour la nouvelle proposition
                 setNewProposalName("");
                 setNewProposalDesc("");
-                //await transaction.wait();
+
             } catch (error) {
                 console.error("Erreur lors de l'ajout de la proposition : ", error);
             }
@@ -94,7 +83,6 @@ export default function Home() {
             setCreatorProps(creatorProps);
             setNumVotes(numVotes);
             setWhoVoted(votedBy);
-           // getProposal();
         }
 
         fetchData();
@@ -129,7 +117,7 @@ export default function Home() {
                 <br/>
             </div>
 
-            <div>
+        <div>
             <div style={{ display: 'grid', justifyContent: 'center' }} >
                 <Row justify="space-between" align="flex-start" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft:'5%'}}>
                     <div>
@@ -155,30 +143,30 @@ export default function Home() {
                 </Row>
             </div>
     <br/>
-            <div style={{ display: 'grid', justifyContent: 'center' }} >
-            <Row justify="center" css={{ marginTop: '$4' }}>
-                    <Col>
-                        <ClientWrapper>
-                            {({ router }) => (
-                                <div style={{ color: 'black', backgroundColor: 'white', padding: '16px', borderRadius: '4px', width: '50vw' }}>
-                                    <u><h1>Liste des propositions</h1></u>
-                                    <ul>
-                                        {props.map((prop, index) => (
-                                            <li key={index} onClick={() => handleClick(index, router)}>
-                                                <Link href="/proplink"><h2 style={{ color: 'black' }}><strong>{prop}</strong></h2></Link>
-                                                <p>{propsDesc[index]}</p>
-                                                <p>Proposition faite par : {creatorProps[index]}</p>
-                                                <br></br>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </ClientWrapper>
-                    </Col>
-                </Row>
-            </div>
-            </div>
+                <div style={{ display: 'grid', justifyContent: 'center' }} >
+                    <Row justify="center" css={{ marginTop: '$4' }}>
+                        <Col>
+                            <div style={{ color: 'black', backgroundColor: 'white', padding: '16px', borderRadius: '4px', width: '50vw' }}>
+                                        <u><h1>Liste des propositions</h1></u>
+                                <ul>
+                                    {props.map((prop, index) => (
+                                        <li key={index}>
+                                            <button onClick={() => router.push('/proplink?index=' + index)}>
+                                                <h2 style={{ color: 'black' }}>
+                                                    <strong>{prop}</strong>
+                                                </h2>
+                                            </button>
+                                            <p>{propsDesc[index]}</p>
+                                            <p>Proposition faite par : {creatorProps[index]}</p>
+                                            <br />
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </Col>
+                    </Row>
+                </div>
+        </div>
 
         </main>
     )

@@ -5,196 +5,25 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import {regles} from './regles/page'
 import Image from 'next/image';
+import './globals.css';
 import styles from './page.module.css';
-import { Container, Row, Col } from '@nextui-org/react';
+import {Container, Row, Col, blueDark, yellow, theme} from '@nextui-org/react';
 import { Button } from '@nextui-org/react';
 import Link from "next/link";
 import {ethers} from "ethers";
 import { NextUIProvider } from '@nextui-org/react';
+import { ThemeProvider } from 'next-themes';
 
 const WebSocket = require('ws');
 
-//Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-import Voting from './artifacts/contracts/votingcontract.sol/Voting.json' //ABI
-const votingAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512' //ADDRESS
-
-export default function Home() {
-
-    const [newProposalName, setNewProposalName] = useState(""); // State pour stocker le nouveau nom de proposition
-    const [newProposalDesc, setNewProposalDesc] = useState(""); // State pour stocker le nouveau nom de proposition
-    const [proposals, setProposals] = useState([]); // State pour stocker les propositions récupérées
-
-    let state = {
-        voters:[],
-        proposals:[],
-    };
-
-    useEffect(()=>{
-        console.log("Fetching proposals...");
-        getProposal();
-    }, [])
-
-    async function requestAccount(){
-        await window.ethereum.request({method: 'eth_requestAccounts'})
-    }
-
-    async function getProposal(){
-        console.log("Getting proposals...");
-       // await requestAccount();
-        if (typeof window.ethereum !== 'undefined') {
-
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const Constvotingcontract = new ethers.Contract(votingAddress, Voting.abi, provider);
-
-            try {
-                const data = await Constvotingcontract.getProposals();
-                console.log("Proposals fetched:", data);
-
-                setProposals(data);
-            } catch (error) {
-                console.error("Probleme lors de l'affichage des votant : ", error);
-            }
-        }
-    }
-
-
-    async function addProposal() {
-        await requestAccount();
-        console.log(newProposalName);
-        if(!newProposalName) return
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                console.log(newProposalName);
-                // Se connecter au fournisseur Web3 (MetaMask)
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                //Signer le contrat
-                const signer = provider.getSigner();
-                // Créer une instance du contrat Voting
-                const votingContract = new ethers.Contract(votingAddress, Voting.abi, signer);
-                // Appeler la fonction Solidity pour ajouter une nouvelle proposition
-                const transaction = await votingContract.addProposal(newProposalName, newProposalDesc);
-
-                //this.state.proposals.push(newProposal);
-                console.log("coucou");
-                // Réinitialiser le champ pour la nouvelle proposition
-                setNewProposalName("");
-                setNewProposalDesc("");
-                //await transaction.wait();
-                getProposal()
-            } catch (error) {
-                console.error("Erreur lors de l'ajout de la proposition : ", error);
-            }
-        } else {
-            console.error("Web3 non disponible. Veuillez installer MetaMask pour interagir avec cette fonction.");
-        }
-    }
-
-
-    function handleNewProposal(event) {
-        setNewProposal(event.target.value);
-        // event.target.value contient la valeur du champ de saisie de la nouvelle proposition
-        setProposals([...proposals, event.target.value]);
-    }
-
-
-
-    return (
-        <main className={styles.main}>
-
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$8' }}>
-                        <img style={{ width: '220px' }} src="/Marilyn_Monroe_Subway.png"  alt={"Marilyn_Monroe_Subway"}/>
-                    </Col>
-                </Row>
-            </div>
-
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$8' }}>
-                        <Link href='/regles'>
-
-                            <Button
-                                size="sm"
-                                style={{
-                                    background: '#00000070',
-                                    boxShadow: '0px 0px 4px #ffffff',
-                                }}
-                            >
-                              <span
-                                  style={{
-                                      color: 'white',
-                                      fontSize: '20px',
-                                  }}
-                              >
-                                  Règles du vote
-                              </span>
-                            </Button>
-
-                        </Link>
-                    </Col>
-                </Row>
-            </div>
-
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$4' }}>
-                        <ul>
-                            <input type="text" id="newProposalInputName" value={newProposalName} onChange={(e) => setNewProposalName(e.target.value)} />
-                        </ul>
-                        <ul>
-                            <input type="text" id="newProposalInputDesc" value={newProposalDesc} onChange={(e) => setNewProposalDesc(e.target.value)} />
-                        </ul>
-                        <ul>
-                            <Button onPress={addProposal}>Ajouter une proposition ici</Button>
-                        </ul>
-                    </Col>
-                </Row>
-            </div>
-
-
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$4' }}>
-                        <h2>Liste des propositions</h2>
-                        <ul>
-                            {proposals.map((proposal, index) => (
-                                <li key={index}>{proposal}</li>
-                            ))}
-                        </ul>
-                    </Col>
-                </Row>
-            </div>
-
-        </main>
-    )
-}
-
-////////////////
-
-"use client"; // client component
-
-//import list
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import {regles} from './regles/page'
-import Image from 'next/image';
-import styles from './page.module.css';
-import { Container, Row, Col } from '@nextui-org/react';
-import { Button } from '@nextui-org/react';
-import Link from "next/link";
-import {ethers} from "ethers";
-import { NextUIProvider } from '@nextui-org/react';
-
-const WebSocket = require('ws');
 
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-import VotingABI from './artifacts/contracts/votingcontract.sol/Voting.json' //ABI
+import VotingABI from './artifacts/contracts/votingcontract.sol/Voting.json'
 const VotingAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512' //ADDRESS
 
 export default function Home() {
 
-    const [newProposalName, setNewProposalName] = useState(''); // State pour stocker le nouveau nom de proposition
+    const [newProposalName, setNewProposalName] = useState('') ; // State pour stocker le nouveau nom de proposition
     const [newProposalDesc, setNewProposalDesc] = useState(''); // State pour stocker le nouveau nom de proposition
     const [proposals, setProposals] = useState([]); // State pour stocker les propositions récupérées
     const [props, setProps] = useState([]);
@@ -203,154 +32,369 @@ export default function Home() {
     const [numVotes, setNumVotes] = useState([]);
     const [whoVoted, setWhoVoted] = useState([]);
 
-    let proptabl = null;
-
-    let state = {
-        voters: [],
-        proposals: [],
-    };
 
     async function requestAccount() {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
     }
 
 
-    async function addProposal() {
-        await requestAccount();
-        console.log(newProposalName);
-        if(!newProposalName) return
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                console.log(newProposalName);
-                // Se connecter au fournisseur Web3 (MetaMask)
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                //Signer le contrat
-                const signer = provider.getSigner();
-                // Créer une instance du contrat Voting
-                const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
-                // Appeler la fonction Solidity pour ajouter une nouvelle proposition
-                const transaction = await contract.addProposal(newProposalName, newProposalDesc);
-
-                //this.state.proposals.push(newProposal);
-                console.log("coucou");
-                // Réinitialiser le champ pour la nouvelle proposition
-                setNewProposalName("");
-                setNewProposalDesc("");
-                //await transaction.wait();
-                getProposal()
-            } catch (error) {
-                console.error("Erreur lors de l'ajout de la proposition : ", error);
-            }
-        } else {
-            console.error("Web3 non disponible. Veuillez installer MetaMask pour interagir avec cette fonction.");
-        }
-
-    }
-
-    useEffect(() => {
-        console.log('Fetching proposals...');
-        async function fetchData() {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            //Signer le contrat
-            const signer = provider.getSigner();
-            // Créer une instance du contrat Voting
-            const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
-            const [props, propsDesc, creatorProps, numVotes, votedBy] = await contract.getFullProps();
-
-            setProps(props);
-            setPropsDesc(propsDesc);
-            setCreatorProps(creatorProps);
-            setNumVotes(numVotes);
-            setWhoVoted(votedBy);
-        }
-
-        fetchData();
-    }, []);
-
     return (
-        <main className={styles.main}>
+        <main>
 
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$8' }}>
-                        <img style={{ width: '220px' }} src="/Marilyn_Monroe_Subway.png"  alt={"Marilyn_Monroe_Subway"}/>
-                    </Col>
-                </Row>
-            </div>
+                                <div style={{ color: 'black', backgroundColor: 'white', padding: '16px', borderRadius: '4px', width: '50vw' }}>
+                                    <u><h1>Liste des propositions</h1></u>
+                                    <ul>
+                                        {props.map((prop, index) => (
+                                            <li key={index}>
 
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$8' }}>
-                        <Link href='/regles'>
+                                                <!--<Link href={`/proplink/${index}`} onClick={() => router.push('/proplink')} >-->
 
-                            <Button
-                                size="sm"
-                                style={{
-                                    background: '#00000070',
-                                    boxShadow: '0px 0px 4px #ffffff',
-                                }}
-                            >
-                              <span
-                                  style={{
-                                      color: 'white',
-                                      fontSize: '20px',
-                                  }}
-                              >
-                                  Règles du vote
-                              </span>
-                            </Button>
-
-                        </Link>
-                    </Col>
-                </Row>
-            </div>
-
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$4' }}>
-                        <ul>
-                            <input type="text" id="newProposalInputName" value={newProposalName} onChange={(e) => setNewProposalName(e.target.value)} />
-                        </ul>
-                        <ul>
-                            <input type="text" id="newProposalInputDesc" value={newProposalDesc} onChange={(e) => setNewProposalDesc(e.target.value)} />
-                        </ul>
-                        <ul>
-                            <Button onPress={addProposal}>Ajouter une proposition ici</Button>
-                        </ul>
-                    </Col>
-                </Row>
-            </div>
-
-
-            <div>
-                <Row justify="center">
-                    <Col css={{ marginTop: '$4' }}>
-                        <h2>Liste des propositions</h2>
-                        <ul>
-                            {props.map((prop, index) => (
-                                <li key={index}>
-                                    <strong>{prop}</strong>
-                                    <p>{propsDesc[index]}</p>
-                                    <p>Cree par : {creatorProps[index]}</p>
-                                    <p>Nombre de votes : {numVotes[index]}</p>
-                                    <p>Vote par : {whoVoted[index].join(", ")}</p>
-                                </li>
-                            ))}
-                        </ul>
-                    </Col>
-                </Row>
-            </div>
+                                                <Link href="/proplink"><h2 style={{ color: 'black' }}><strong>{prop}</strong></h2></Link>
+                                                <p>{propsDesc[index]}</p>
+                                                <p>Proposition faite par : {creatorProps[index]}</p>
+                                                <br></br>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
 
         </main>
     )
 }
 
 
+///////////////////////////////////////////
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.9;
+
+contract Voting {
+
+    mapping(address => bool) public hasVoted; // Mapping pour stocker si une adresse a deja vote
+    mapping(string => uint256) public voteCount; // Mapping pour stocker le nombre de votes par proposition
+    string[] public proposals; // Tableau pour stocker les propositions
+    //address[] public voters; // Tableau pour stocker les adresses des votants
+    bool public endVote=false;
+
+
+    struct prop{
+        bool isActive;
+        string props;
+        string propsdesc;
+        address creatorprops;
+        uint256 NumberVotes;
+        address[] whoVoted;
+    }
+
+    prop[] public proptabl;
+
+    mapping(address => prop) public propcreator;
+    mapping(string => prop) public propname;
+
+
+    constructor() {
+
+    }
+
+
+    // Fonction pour ajouter une proposition au tableau de propositions
+    function addProposal(string memory proposal, string memory desc) public {
+
+        require(endVote==false, "Le vote est termine");
+        require(bytes(proposal).length > 0, "Proposal name cannot be empty"); // Verifie que le nom de la proposition n'est pas vide
+        require(!isProposalExists(proposal), "Proposal already exists"); // Verifie que la proposition n'existe pas deja
+
+        bool active = true;
+        prop memory padd = prop(active, proposal, desc, msg.sender, 0, new address[](0));
+        propcreator[msg.sender] = padd;
+        propname[proposal] = padd;
+
+        proptabl.push(padd);
+    }
+
+    function removeProposal(string memory proposal) public returns (bool) {
+        require(endVote==false, "Le vote est termine");
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            // Acceder a la proposition à l'indice i
+            prop memory proposition = proptabl[i];
+
+            if (keccak256(abi.encodePacked(proposition.props)) == keccak256(abi.encodePacked(proposal))) {
+                // require(proposition.isActive == true, "Proposal already removed");
+                proptabl[i].isActive = false;
+                return true;
+            }
+        }
+
+        // Si la proposition n'est pas trouvee, retourner false
+        return false;
+    }
+
+    //function to have the full proposal (prop, desc, creator prop)
+    function getFullProps() public view returns (string[] memory, string[] memory, address[] memory, uint256[] memory, address[][] memory) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (proptabl[i].isActive) {
+                count++;
+            }
+        }
+
+        string[] memory props = new string[](count);
+        string[] memory propsdesc = new string[](count);
+        address[] memory creatorprops = new address[](count);
+        uint256[] memory numVotes = new uint256[](count);
+        address[][] memory votedBy = new address[][](count);
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (proptabl[i].isActive) {
+                props[index] = proptabl[i].props;
+                propsdesc[index] = proptabl[i].propsdesc;
+                creatorprops[index] = proptabl[i].creatorprops;
+                numVotes[index] = proptabl[i].NumberVotes;
+                votedBy[index] = proptabl[i].whoVoted;
+                index++;
+            }
+        }
+
+        return (props, propsdesc, creatorprops, numVotes, votedBy);
+    }
 
 
 
- <p>{propsDesc[index]}</p>
-                                    <p>Cree par : {creatorProps[index]}</p>
-                                    <p>Nombre de votes : {numVotes[index]}</p>
-                                    <p>Vote par : {whoVoted[index].join(", ")}</p>
+
+
+    // Fonction pour voter pour une proposition
+    function vote(string memory proposal) public {
+
+        require(endVote==false, "Le vote est termine");
+        require(!hasVoted[msg.sender], "You have already voted"); // Verifie que l'adresse du votant n'a pas encore participee au vote
+        require(isProposalExists(proposal), "Invalid proposal"); // Verifie que la proposition existe
+
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            // Acceder a la proposition a l'indice i
+            prop storage proposition = proptabl[i];
+
+            if (keccak256(abi.encodePacked(proposition.props)) == keccak256(abi.encodePacked(proposal))) {
+                //require(proposition.isActive == true, "Proposal not existing");
+                hasVoted[msg.sender] = true;
+                proposition.whoVoted.push(msg.sender);
+                proposition.NumberVotes += 1;
+            }
+        }
+    }
+
+    // Fonction pour obtenir le nombre de votes pour une proposition donnee
+    function getVoteCount(string memory proposal) public view returns (uint256) {
+
+        //verification if la proposal existe
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            // Accéder à la proposition à l'indice i
+            prop storage proposition = proptabl[i];
+
+            if (keccak256(abi.encodePacked(proposition.props)) == keccak256(abi.encodePacked(proposal))) {
+                require(proposition.isActive == true, "Proposal not existing");
+                return proposition.NumberVotes; // Retourne le nombre de votes pour la proposition "proposal" entree en parametre
+            }
+        }
+
+        return 0; // Retourne 0 sinon
+    }
+
+
+    //Fonction pour afficher tous les votants (adresses)
+    function getVoters() public view returns (address[] memory) {
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (proptabl[i].isActive) {
+                count += proptabl[i].whoVoted.length;
+            }
+        }
+
+        address[] memory voters = new address[](count); // Tableau pour stocker les adresses des votants
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (proptabl[i].isActive) {
+                prop storage proposition = proptabl[i];
+                for (uint256 j = 0; j < proposition.whoVoted.length; j++) {
+                    voters[index] = proposition.whoVoted[j];
+                    index++;
+                }
+            }
+        }
+
+        return voters;
+    }
+
+
+
+    // Fonction pour afficher les resultats des votes
+    function getResultats() public view returns (string[] memory) {
+
+        require(endVote == true, "Le vote n'est pas encore termine");
+
+
+        uint256 maxVotes = 0;
+        uint256 count = 0;
+        string[] memory winningProposal;
+        winningProposal = new string[](proptabl.length);
+
+        //search for the max votes proposal
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (proptabl[i].isActive && proptabl[i].NumberVotes > maxVotes) {
+                maxVotes = proptabl[i].NumberVotes;
+            }
+        }
+
+        //search for egal max votes proposal
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (proptabl[i].isActive && proptabl[i].NumberVotes == maxVotes) {
+                count++;
+                winningProposal[count-1] = proptabl[i].props;
+            }
+        }
+
+        //on retourne le/les gagnants
+        return winningProposal;
+    }
+
+
+
+
+    // Fonction pour verifier si une proposition existe deja
+    function isProposalExists(string memory proposal) internal view returns (bool) {
+        for (uint256 i = 0; i < proptabl.length; i++) {
+            if (keccak256(bytes(proptabl[i].props)) == keccak256(bytes(proposal)) && proptabl[i].isActive) {
+                return true;
+            }
+        }
+        return false; // Retourne false si la proposition n'existe pas
+    }
+
+
+
+    //function pour finir le vote
+    function endVoteFunction() public {
+        require(msg.sender==0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, "vous n'avez pas les privileges pour arreter le vote"); //account 2 on hardhat
+        endVote=true;
+    }
+
+    //function pour finir le vote
+    function newVoteFunction() public {
+        require(msg.sender==0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, "vous n'avez pas les privileges pour refaire un vote"); //account 2 on hardhat
+        endVote=false;
+
+        for (uint256 i = 0; i < proposals.length; i++) {
+            delete voteCount[proposals[i]];
+        }
+
+        delete proposals;
+
+        address[] memory voters = getVoters();
+
+        for (uint256 i = 0; i < voters.length; i++) {
+            hasVoted[voters[i]] = false;
+        }
+
+
+        while(proptabl.length > 0) {
+            // supprimer toutes les propositions du tableau
+            proptabl.pop();
+        }
+
+    }
+
+
+
+
+}
+
+
+/*
+contract Voting {
+
+    mapping(address => bool) public hasVoted; // Mapping pour stocker si une adresse a déjà voté
+    mapping(string => uint256) public voteCount; // Mapping pour stocker le nombre de votes par proposition
+    string[] public proposals; // Tableau pour stocker les propositions
+    address[] public voters; // Tableau pour stocker les adresses des votants
+
+    constructor() {
+
+    }
+
+
+    // Fonction pour voter pour une proposition
+    function vote(string memory proposal) public {
+
+        require(!hasVoted[msg.sender], "You have already voted"); // Verifie que l'adresse du votant n'a pas encore participee au vote
+        require(isProposalExists(proposal), "Invalid proposal"); // Verifie que la proposition existe
+
+        voteCount[proposal]++; // Incremente le nombre de votes pour la proposition donnée
+        hasVoted[msg.sender] = true; // Marque l'adresse de l'électeur comme ayant voté
+        voters.push(msg.sender);
+
+    }
+
+
+    // Fonction pour ajouter une proposition au tableau de propositions
+    function addProposal(string memory proposal) public {
+
+        require(bytes(proposal).length > 0, "Proposal name cannot be empty"); // Verifie que le nom de la proposition n'est pas vide
+        require(!isProposalExists(proposal), "Proposal already exists"); // Verifie que la proposition n'existe pas deja
+        proposals.push(proposal); // Ajoute la proposition au tableau de propositions
+
+        getProposals(); //appel a getProposals() pour maj l'interface visible par l'user de la liste
+
+    }
+
+
+
+
+    // Fonction pour obtenir le nombre de votes pour une proposition donnee
+    function getVoteCount(string memory proposal) public view returns (uint256) {
+        require(isProposalExists(proposal), "Invalid proposal"); // Verifie que la proposition existe
+        return voteCount[proposal]; // Retourne le nombre de votes pour la proposition donnee
+    }
+
+
+    //Fonction pour afficher toutes les propositions
+    function getProposals() public view returns (string[] memory) {
+        return proposals;
+    }
+
+    //Fonction pour afficher tous les votants (adresses)
+    function getVoters() public view returns (address[] memory) {
+        return voters;
+    }
+
+
+    // Fonction pour afficher les resultats des votes
+    function getResultats() public view returns (string[] memory, uint256[] memory) {
+
+        uint256[] memory voteCounts = new uint256[](proposals.length); // Tableau pour stocker le nombre de votes pour chaque proposition
+
+        for (uint256 i = 0; i < proposals.length; i++) {
+
+            voteCounts[i] = voteCount[proposals[i]]; // Obtient le nombre de votes pour chaque proposition
+
+        }
+
+        return (proposals, voteCounts); // Retourne les noms de propositions et les nombres de votes correspondants
+    }
+
+
+
+    // Fonction pour verifier si une proposition existe deja
+    function isProposalExists(string memory proposal) internal view returns (bool) {
+        for (uint256 i = 0; i < proposals.length; i++) {
+            if (keccak256(bytes(proposals[i])) == keccak256(bytes(proposal))) {
+                // Compare le hachage des noms de proposition pour savoir si elles sont identiques
+                return true; // Retourne true si la proposition existe deja
+            }
+        }
+        return false; // Retourne false si la proposition n'existe pas
+    }
+}*/
 
