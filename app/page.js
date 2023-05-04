@@ -20,7 +20,7 @@ const WebSocket = require('ws');
 
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 import VotingABI from './artifacts/contracts/votingcontract.sol/Voting.json'
-const VotingAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3' //ADDRESS
+const VotingAddress = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0' //ADDRESS
 
 export default function Home() {
 
@@ -32,14 +32,15 @@ export default function Home() {
     const [creatorProps, setCreatorProps] = useState([]);
     const [numVotes, setNumVotes] = useState([]);
     const [whoVoted, setWhoVoted] = useState([]);
+    const [indexProp, setIndexProp] = useState([]);
 
     const router = useRouter();
 
-   async function requestAccount() {
+    async function requestAccount() {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
-   }
+    }
 
-   async function addProposal() {
+    async function addProposal() {
         await requestAccount();
         console.log(newProposalName);
         if(!newProposalName) return
@@ -76,8 +77,9 @@ export default function Home() {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
-            const [props, propsDesc, creatorProps, numVotes, votedBy] = await contract.getFullProps();
+            const [indexProp, props, propsDesc, creatorProps, numVotes, votedBy] = await contract.getFullProps();
 
+            setIndexProp(indexProp);
             setProps(props);
             setPropsDesc(propsDesc);
             setCreatorProps(creatorProps);
@@ -117,41 +119,42 @@ export default function Home() {
                 <br/>
             </div>
 
-        <div>
-            <div style={{ display: 'grid', justifyContent: 'center' }} >
-                <Row justify="space-between" align="flex-start" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft:'5%'}}>
-                    <div>
-                        <Row justify="center" align="stretch">
-                            <Col css={{ marginTop: '$4' }}>
-                                <ul>
-                                    <input placeholder={'Nom de la proposition'} type="text" id="newProposalInputName" value={newProposalName}
-                                           onChange={(e) => setNewProposalName(e.target.value)}
-                                           style={{ width: '100%'}}/>
-                                </ul>
-                                <br/>
-                                <ul>
+            <div>
+                <div style={{ display: 'grid', justifyContent: 'center' }} >
+                    <Row justify="space-between" align="flex-start" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft:'5%'}}>
+                        <div>
+                            <Row justify="center" align="stretch">
+                                <Col css={{ marginTop: '$4' }}>
+                                    <ul>
+                                        <input placeholder={'Nom de la proposition'} type="text" id="newProposalInputName" value={newProposalName}
+                                               onChange={(e) => setNewProposalName(e.target.value)}
+                                               style={{ width: '100%'}}/>
+                                    </ul>
+                                    <br/>
+                                    <ul>
                                     <textarea placeholder={'Description de la proposition'} id="newProposalInputDesc" value={newProposalDesc}
                                               onChange={(e) => setNewProposalDesc(e.target.value)}
                                               style={{ width: '100%', height: '50px' }} />
-                                </ul>
-                                <ul>
-                                    <Button onPress={addProposal}>Ajouter une proposition ici</Button>
-                                </ul>
-                            </Col>
-                        </Row>
-                    </div>
-                </Row>
-            </div>
-    <br/>
+                                    </ul>
+                                    <ul>
+                                        <Button onPress={addProposal}>Ajouter une proposition ici</Button>
+                                    </ul>
+                                </Col>
+                            </Row>
+                        </div>
+                    </Row>
+                </div>
+                <br/>
                 <div style={{ display: 'grid', justifyContent: 'center' }} >
                     <Row justify="center" css={{ marginTop: '$4' }}>
                         <Col>
                             <div style={{ color: 'black', backgroundColor: 'white', padding: '16px', borderRadius: '4px', width: '50vw' }}>
-                                        <u><h1>Liste des propositions</h1></u>
+                                <u><h1>Liste des propositions</h1></u>
+                                <br/>
                                 <ul>
                                     {props.map((prop, index) => (
                                         <li key={index}>
-                                            <button onClick={() => router.push('/proplink?index=' + index)}>
+                                            <button onClick={() => router.push('/proplink?index=' + indexProp[index])}>
                                                 <h2 style={{ color: 'black' }}>
                                                     <strong>{prop}</strong>
                                                 </h2>
@@ -166,7 +169,7 @@ export default function Home() {
                         </Col>
                     </Row>
                 </div>
-        </div>
+            </div>
 
         </main>
     )
