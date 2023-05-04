@@ -1,15 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 import { useRouter } from 'next/navigation';
+//import { useRouter } from 'next/router';
 //import {Link, useLocation} from 'react-router-dom';
+import {Button, Col, Row} from "@nextui-org/react";
+import Link from "next/link";
 
 
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 import VotingABI from '../artifacts/contracts/votingcontract.sol/Voting.json'
-import {Button, Col, Row} from "@nextui-org/react";
-import Link from "next/link";
-const VotingAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3' //ADDRESS
+const VotingAddress = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0' //ADDRESS
 
 
 export default function Proplink() {
@@ -20,18 +21,36 @@ export default function Proplink() {
     const [creatorProps, setCreatorProps] = useState('')
     const [numVotes, setNumVotes] = useState('');
     const [whoVoted, setWhoVoted] = useState([]);
+    const [indexProp, setIndexProp] = useState([]);
 
+    //if (typeof window !== 'undefined') {
+    /*     const params = new URLSearchParams(window.location.search);
+         console.log("params : ", params);
+         console.log("window: ", window);
+         const index = params.get('index');
+         setIndexProp(index);
+         console.log(indexProp);
+    */// }
+    /*
     let indexN;
+    const router = useRouter();
+    const {index} = router.query;
+    indexN={index};*/
 
-    if (typeof window !== 'undefined') {
+    /*
         const params = new URLSearchParams(window.location.search);
         const index = params.get('index');
-        indexN = index;
-        console.log(index);
-    }
+        if (index!==null) {
+            indexN =  BigNumber.from(index);//parseInt(index);
+        } else {
+            location.assign('/proplink?index=' + index);
+            //location.reload();//indexN = 0;
+        }
+        console.log(indexN);*/
+
 
     async function requestAccount() {
-       await window.ethereum.request({ method: 'eth_requestAccounts' });
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
     }
 
     function numVotesFunction() {
@@ -45,63 +64,89 @@ export default function Proplink() {
     }
 
 
-    async function vote() {
-
+    async function voteById() {
         console.log("coucouvote32");
 
-       await requestAccount();
+        await requestAccount(); /* appel à requestAccount(), qui doit être une fonction définie ailleurs */
+        console.log("coucouvote4");
 
         if (typeof window.ethereum !== 'undefined') {
             try {
+                console.log("coucouvote5");
+
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
+                console.log("coucouvote51");
+
                 const signer = provider.getSigner();
+                console.log("coucouvote52");
+
                 const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
-                const transaction = await contract.voteById(indexN);
-                console.log('Vote submitted');
+                console.log("coucouvote53");
+                console.log("index N = ", index);
+
+                await contract.voteById(index); /* indexN doit être défini quelque part */
+                console.log('Vote soumis');
             } catch (error) {
+                console.log("coucouvote6");
                 console.error('Erreur lors du vote : ', error);
             }
         } else {
+            console.log("coucouvote7");
             console.error(
                 'Web3 non disponible. Veuillez installer MetaMask pour interagir avec cette fonction.'
             );
         }
-
     }
+    let index;
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        console.log("params : ", params);
+        console.log("window: ", window);
+        index = params.get('index');
+    });
+    /*useEffect(() => {
+        setIndexProp(index);
+    });
+    console.log(indexProp);/*
+    useEffect(() => {
+        /*const params = new URLSearchParams(window.location.search);
+        const index = params.get('index');
+        setIndexProp(index);
+        const params = new URLSearchParams(window.location.search);
+        console.log("params : ", params);
+        console.log("window: ", window);
+        const index = params.get('index');
+        setIndexProp(index);
+        console.log(indexProp);
+    }, []);*/
 
-
-
-
-    console.log(indexN);
+    console.log(index);
     console.log("props ==> ", {props});
-    console.log("votesNum ==> ", {numVotesFunction});
+    console.log("votesNum ==> ", {numVotes});
 
     useEffect(() => {
-
-       /* const params = new URLSearchParams(window.location.search);
-        const index = params.get('index');
-        indexN = index;
-        console.log(index);
-*/
         console.log('Fetching proposals...');
         async function fetchData() {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
-            const [propsData, propsDescData, creatorPropsData, numVotesData, votedByData] = await contract.getFullPropById(indexN);
+            const [indexProp, props, propsDesc, creatorProps, numVotes, votedBy] = await contract.getFullPropById(index);
 
-            setProps(propsData);
-            setPropsDesc(propsDescData);
-            setCreatorProps(creatorPropsData);
-            setNumVotes(parseInt(numVotesData));
-            setWhoVoted(votedByData);
+            setIndexProp(parseInt(indexProp));
+            setProps(props);
+            setPropsDesc(propsDesc);
+            setCreatorProps(creatorProps);
+            setNumVotes(parseInt(numVotes));
+            setWhoVoted(votedBy);
         }
 
         fetchData();
-    }, []);
+    }, [index]);
+
+
 
     return (
-    <div>
+        <div>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop:'5%' }}>
 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft:'5%'}}>
@@ -125,9 +170,9 @@ export default function Proplink() {
                 </div>
             </header>
 
-        <div>
-            <br/>
-        </div>
+            <div>
+                <br/>
+            </div>
 
             <div>
                 <div style={{ display: 'grid', justifyContent: 'center' }} >
@@ -140,13 +185,13 @@ export default function Proplink() {
                                     <p><b>Description de la proposition :</b> {propsDesc}</p>
                                     <p><b>Proposition faite par :</b> {creatorProps}</p>
                                     <p>Il y a actuellement {numVotesFunction()} voix pour la proposition</p>
-                                    <button onPress={vote}>Voter pour</button>
+                                    <button onClick={voteById}>Voter pour</button>
                                 </ul>
                             </div>
                         </Col>
                     </Row>
                 </div>
             </div>
-    </div>
+        </div>
     );
 }

@@ -11,6 +11,7 @@ contract Voting {
 
 
     struct prop{
+        int256 id;
         bool isActive;
         string props;
         string propsdesc;
@@ -24,6 +25,8 @@ contract Voting {
     mapping(address => prop) public propcreator;
     mapping(string => prop) public propname;
 
+    // Compteur d'ID pour les propositions
+    int256 public propCount=-1;
 
     constructor() {
 
@@ -38,8 +41,9 @@ contract Voting {
         require(bytes(proposal).length > 0, "Proposal name cannot be empty"); // Verifie que le nom de la proposition n'est pas vide
         require(!isProposalExists(proposal), "Proposal already exists"); // Verifie que la proposition n'existe pas deja
 
+        propCount++;
         bool active = true;
-        prop memory padd = prop(active, proposal, desc, msg.sender, 0, new address[](0));
+        prop memory padd = prop(propCount, active, proposal, desc, msg.sender, 0, new address[](0));
         propcreator[msg.sender] = padd;
         propname[proposal] = padd;
 
@@ -81,7 +85,7 @@ contract Voting {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     //function to have the full proposal (prop, desc, creator prop)
-    function getFullProps() public view returns (string[] memory, string[] memory, address[] memory, uint256[] memory, address[][] memory) {
+    function getFullProps() public view returns (int256[] memory, string[] memory, string[] memory, address[] memory, uint256[] memory, address[][] memory) {
         uint256 count = 0;
         for (uint256 i = 0; i < proptabl.length; i++) {
             if (proptabl[i].isActive) {
@@ -89,6 +93,7 @@ contract Voting {
             }
         }
 
+        int256[] memory id = new int256[](count);
         string[] memory props = new string[](count);
         string[] memory propsdesc = new string[](count);
         address[] memory creatorprops = new address[](count);
@@ -98,6 +103,7 @@ contract Voting {
         uint256 index = 0;
         for (uint256 i = 0; i < proptabl.length; i++) {
             if (proptabl[i].isActive) {
+                id[index] = proptabl[i].id;
                 props[index] = proptabl[i].props;
                 propsdesc[index] = proptabl[i].propsdesc;
                 creatorprops[index] = proptabl[i].creatorprops;
@@ -107,13 +113,14 @@ contract Voting {
             }
         }
 
-        return (props, propsdesc, creatorprops, numVotes, votedBy);
+        return (id, props, propsdesc, creatorprops, numVotes, votedBy);
     }
 
 
     //function to get the full proposal (prop, desc, creator prop)
-    function getFullPropById(uint256 indexProp) public view returns (string[] memory, string[] memory, address[] memory, uint256[] memory, address[][] memory) {
+    function getFullPropById(uint256 indexProp) public view returns (int256[] memory, string[] memory, string[] memory, address[] memory, uint256[] memory, address[][] memory) {
 
+        int256[] memory id = new int256[](1);
         string[] memory props = new string[](1);
         string[] memory propsdesc = new string[](1);
         address[] memory creatorprops = new address[](1);
@@ -121,6 +128,7 @@ contract Voting {
         address[][] memory votedBy = new address[][](1);
 
         if (proptabl[indexProp].isActive) {
+            id[0] = proptabl[indexProp].id;
             props[0] = proptabl[indexProp].props;
             propsdesc[0] = proptabl[indexProp].propsdesc;
             creatorprops[0] = proptabl[indexProp].creatorprops;
@@ -128,7 +136,7 @@ contract Voting {
             votedBy[0] = proptabl[indexProp].whoVoted;
         }
 
-        return (props, propsdesc, creatorprops, numVotes, votedBy);
+        return (id, props, propsdesc, creatorprops, numVotes, votedBy);
     }
 
 
