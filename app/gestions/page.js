@@ -14,7 +14,7 @@ const WebSocket = require('ws');
 
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 import VotingABI from '../artifacts/contracts/votingcontract.sol/Voting.json'
-const VotingAddress = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0' //ADDRESS
+const VotingAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3' //ADDRESS
 
 export default function Home() {
 
@@ -55,8 +55,8 @@ export default function Home() {
                 console.log("props = ", props);
 
                 const transaction = await contract.removeProposalById(indexprop);
-                const newProps = props.filter((_, index) => index !== indexprop);
-                setProps(newProps);
+                // const newProps = props.filter((_, index) => index !== indexprop);
+                //setProps(newProps);
                 //setProposals(newProps);
                 console.log('Remove soumis, indexprop = ', indexprop);
 
@@ -82,7 +82,7 @@ export default function Home() {
             const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
             const [indexProp, props, propsDesc, creatorProps, numVotes, votedBy] = await contract.getFullProps();
 
-            setIndexProp(parseInt(indexProp));
+            setIndexProp(indexProp.map((idx) => parseInt(idx)));
             setProps(props);
             setPropsDesc(propsDesc);
             setCreatorProps(creatorProps);
@@ -139,7 +139,7 @@ export default function Home() {
                                         <p>{propsDesc[index]}</p>
                                         <p>Proposition {index} faite par : {creatorProps[index]}</p>
                                         <p>Il y a actuellement {numVotes[index]} voix pour la proposition</p>
-                                        <button onClick={() => removeProposalById(index)}>Supprimer la proposition</button>                                            <br/>
+                                        <button onClick={() => removeProposalById(indexProp[index])}>Supprimer la proposition</button>                                            <br/>
                                         <br/>
                                     </li>
                                 ))}
