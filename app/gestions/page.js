@@ -11,6 +11,7 @@ import Link from "next/link";
 
 const WebSocket = require('ws');
 
+
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 import VotingABI from '../artifacts/contracts/votingcontract.sol/Voting.json'
 const VotingAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3' //ADDRESS
@@ -24,6 +25,7 @@ export default function Home() {
     const [numVotes, setNumVotes] = useState(new Array(props.length).fill(0));
     const [whoVoted, setWhoVoted] = useState([]);
     const [indexProp, setIndexProp] = useState([]);
+    const [resultat, setResultat] = useState([]);
 
     console.log("idxProp", indexProp);
 
@@ -31,6 +33,21 @@ export default function Home() {
 
     async function requestAccount() {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
+    }
+
+    function resultatTableau() {
+
+        console.log("dans resultatTableau");
+
+        for(let i=0 ; i<resultat.length ; i++){
+            console.log("1 res value : ", resultat.at(i));
+            if(resultat.at(i)!=""){
+                console.log("res at i", resultat.at(i));
+                return resultat.at(i);
+            }
+            i++;
+        }
+
     }
 
     async function removeProposalById(indexprop) {
@@ -58,6 +75,86 @@ export default function Home() {
                 //setProps(newProps);
                 //setProposals(newProps);
                 console.log('Remove soumis, indexprop = ', indexprop);
+
+            } catch (error) {
+                console.log("coucouvote6");
+                console.error('Erreur lors du vote : ', error);
+            }
+        } else {
+            console.log("coucouvote7");
+            console.error(
+                'Web3 non disponible. Veuillez installer MetaMask pour interagir avec cette fonction.'
+            );
+        }
+    }
+
+
+    async function endVoteFunction() {
+        console.log("coucouvote32");
+
+        await requestAccount(); /* appel à requestAccount(), qui doit être une fonction définie ailleurs */
+        console.log("coucouvote4");
+
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                console.log("coucouvote5");
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                console.log("coucouvote51");
+
+                const signer = provider.getSigner();
+                console.log("coucouvote52");
+
+                const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
+                console.log("coucouvote53");
+                console.log("props = ", props);
+
+                const transaction = await contract.endVoteFunction();
+                // const newProps = props.filter((_, index) => index !== indexprop);
+                //setProps(newProps);
+                //setProposals(newProps);
+                console.log('fin vote');
+
+            } catch (error) {
+                console.log("coucouvote6");
+                console.error('Erreur lors du vote : ', error);
+            }
+        } else {
+            console.log("coucouvote7");
+            console.error(
+                'Web3 non disponible. Veuillez installer MetaMask pour interagir avec cette fonction.'
+            );
+        }
+    }
+
+
+
+    async function getResultats() {
+        console.log("coucouvote32");
+
+        await requestAccount(); /* appel à requestAccount(), qui doit être une fonction définie ailleurs */
+        console.log("coucouvote4");
+
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                console.log("coucouvote5");
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                console.log("coucouvote51");
+
+                const signer = provider.getSigner();
+                console.log("coucouvote52");
+
+                const contract = new ethers.Contract(VotingAddress, VotingABI.abi, signer);
+                console.log("coucouvote53");
+                console.log("props = ", props);
+
+                const transaction = await contract.getResultats();
+                setResultat(transaction);
+                // const newProps = props.filter((_, index) => index !== indexprop);
+                //setProps(newProps);
+                //setProposals(newProps);
+                console.log('var resultats == ', resultat);
 
             } catch (error) {
                 console.log("coucouvote6");
@@ -145,9 +242,41 @@ export default function Home() {
                             </ul>
                         </div>
                     </Col>
+
+                    <Col>
+                        <div style={{ color: 'black', backgroundColor: 'blueviolet', padding: '16px', borderRadius: '4px', width: '50vw' }}>
+                            <u><h1>Gérer le contrat si vous êtes le gérant :</h1></u>
+                            <br/>
+                            <ul>
+                                <li>
+                                    <button onClick={endVoteFunction}>Mettre fin au vote</button>                                            <br/>
+                                    <br/>
+                                    <button onClick={getResultats}>Voir les résultats</button>
+                                    <ul>
+                                        <li>Gagnant(s) : </li>
+
+                                        <strong>{resultatTableau()}</strong>
+
+                                    </ul>
+                                    <br/>
+                                </li>
+                            </ul>
+                        </div>
+                    </Col>
                 </Row>
             </div>
+
+
 
         </main>
     )
 }
+/*
+<!--{resultat.map((res, index) => (
+                                                <li key={index}>
+                                                        <h2 style={{ color: 'black' }}>
+                                                            <strong>{resultatTableau()}</strong>
+                                                        </h2>
+                                                </li>
+                                            ))}-->
+ */
