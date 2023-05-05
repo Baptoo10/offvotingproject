@@ -11,7 +11,6 @@ import Link from "next/link";
 
 const WebSocket = require('ws');
 
-
 //Voting contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 import VotingABI from '../artifacts/contracts/votingcontract.sol/Voting.json'
 const VotingAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3' //ADDRESS
